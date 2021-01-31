@@ -5,13 +5,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.movement.Chasis;
+import org.firstinspires.ftc.teamcode.vision.WebcamVision;
 
 @Autonomous()
 abstract public class AutonomousBase extends LinearOpMode {
 
     protected Chasis chasis;
-    AutonomousBase() {
+    protected WebcamVision webcamVision;
+
+    public AutonomousBase() {
         chasis = new Chasis(this);
+        webcamVision = new WebcamVision(this);
     }
 
     @Override
@@ -23,8 +27,8 @@ abstract public class AutonomousBase extends LinearOpMode {
         run();
     }
 
-    abstract void before();
+    protected abstract void before();
 
-    abstract void run();
+    protected abstract void run();
 
 }

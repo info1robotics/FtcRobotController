@@ -62,6 +62,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
 import com.qualcomm.ftccommon.ClassManagerFactory;
@@ -304,6 +305,7 @@ public class FtcRobotControllerActivity extends Activity
       @Override
       public void onClick(View v) {
         PopupMenu popupMenu = new PopupMenu(FtcRobotControllerActivity.this, v);
+        FtcDashboard.populateMenu(popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem item) {
@@ -380,6 +382,7 @@ public class FtcRobotControllerActivity extends Activity
     }
 
     FtcAboutActivity.setBuildTimeFromBuildConfig(BuildConfig.BUILD_TIME);
+    FtcDashboard.start();
   }
 
   protected UpdateUI createUpdateUI() {
@@ -459,6 +462,7 @@ public class FtcRobotControllerActivity extends Activity
     if (preferencesHelper != null) preferencesHelper.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(sharedPreferencesListener);
 
     RobotLog.cancelWriteLogcatToDisk();
+    FtcDashboard.stop();
   }
 
   protected void bindToService() {
@@ -524,6 +528,7 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.ftc_robot_controller, menu);
+    FtcDashboard.populateMenu(menu);
     return true;
   }
 
@@ -679,6 +684,7 @@ public class FtcRobotControllerActivity extends Activity
         return service.getRobot().eventLoopManager;
       }
     });
+    FtcDashboard.attachWebServer(service.getWebServer());
   }
 
   private void updateUIAndRequestRobotSetup() {
@@ -693,6 +699,7 @@ public class FtcRobotControllerActivity extends Activity
             }
           }
         : null);
+      FtcDashboard.attachEventLoop(eventLoop);
     }
   }
 

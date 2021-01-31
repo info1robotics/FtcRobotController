@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -17,9 +18,6 @@ import java.util.List;
 
 public class WebcamVision {
 
-
-    Telemetry console;
-
     private static final String VUFORIA_LICENSE_KEY = "AcTB3h7/////AAABma7je7SvYkkqrJT5rzDrtvh/dZ4kzPKDHWZs" +
             "kG12sOplNFyVylw2VzUahIt1kP22rq+oYVqkn+++JewM0W0NXk7KDbcMo0cQAtI8WcgJjYh+jTmoNuokUg2A" +
             "NIpNyrqpKBR9VU5tjQEb5akUNBkyfJiKLXWfxv79vaTGptYiGoK4pn9THnHo2PTWtlE5mpts4NjjdUJJe5u8D" +
@@ -35,21 +33,20 @@ public class WebcamVision {
     // public FtcDashboard dashboard;
     private Telemetry dashboardTelemetry;
 
-    public WebcamVision(HardwareMap hardwareMap, Telemetry console) {
+    public WebcamVision(LinearOpMode opMode) {
         VuforiaLocalizer.Parameters vuforiaParams = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
-        vuforiaParams.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        vuforiaParams.cameraName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
         vuforiaParams.vuforiaLicenseKey = VUFORIA_LICENSE_KEY;
         vuforiaParams.cameraDirection = VuforiaLocalizer.CameraDirection.DEFAULT;
         vuforia = ClassFactory.getInstance().createVuforia(vuforiaParams);
 
 
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, ObjectCodes.SINGLE.toString(),
                 ObjectCodes.QUAD.toString());
-        console.addData("TF Object Detection", "Set up");
         if (tfod != null) {
             tfod.activate();
         }
@@ -57,7 +54,6 @@ public class WebcamVision {
         // dashboard = FtcDashboard.getInstance();
         // dashboard.startCameraStream(tfod, 0);
 
-        this.console = console;
         // dashboardTelemetry = dashboard.getTelemetry();
 
 
