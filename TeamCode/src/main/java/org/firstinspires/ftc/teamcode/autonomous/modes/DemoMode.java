@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.vision.DetectedObject;
 public class DemoMode extends AutonomousBase {
 
     @Override
-    protected void before() {
+    protected void setup() {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {

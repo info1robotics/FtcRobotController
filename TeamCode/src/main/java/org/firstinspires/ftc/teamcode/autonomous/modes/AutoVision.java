@@ -10,7 +10,7 @@ public class AutoVision extends AutonomousBase {
 
     private DetectedObject detectedObject;
     @Override
-    protected void before() {
+    protected void setup() {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
