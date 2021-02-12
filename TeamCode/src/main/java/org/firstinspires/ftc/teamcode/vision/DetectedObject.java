@@ -6,4 +6,6 @@ public class DetectedObject {
     public DetectedObject(ObjectCodes objectCode) {
         this.objectCode = objectCode;
     }
+
+    public String toString() {return objectCode.toString(); }
 }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -27,34 +28,36 @@ public class WebcamVision {
 
 
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+    private final LinearOpMode opMode;
 
     private VuforiaLocalizer vuforia;
     public TFObjectDetector tfod;
-    // public FtcDashboard dashboard;
+    public FtcDashboard dashboard;
     private Telemetry dashboardTelemetry;
 
     public WebcamVision(LinearOpMode opMode) {
+        this.opMode = opMode;
         VuforiaLocalizer.Parameters vuforiaParams = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
-        vuforiaParams.cameraName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
+        vuforiaParams.cameraName = this.opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
         vuforiaParams.vuforiaLicenseKey = VUFORIA_LICENSE_KEY;
         vuforiaParams.cameraDirection = VuforiaLocalizer.CameraDirection.DEFAULT;
         vuforia = ClassFactory.getInstance().createVuforia(vuforiaParams);
-
 
         int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, ObjectCodes.SINGLE.toString(),
-                ObjectCodes.QUAD.toString());
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, ObjectCodes.QUAD.toString(), ObjectCodes.SINGLE.toString());
+        tfod.setZoom(1.75, 1920.f/1080);
+
         if (tfod != null) {
             tfod.activate();
         }
 
-        // dashboard = FtcDashboard.getInstance();
-        // dashboard.startCameraStream(tfod, 0);
+        dashboard = FtcDashboard.getInstance();
+        dashboard.startCameraStream(tfod, 0);
 
-        // dashboardTelemetry = dashboard.getTelemetry();
+        dashboardTelemetry = dashboard.getTelemetry();
 
 
     }
@@ -63,18 +66,31 @@ public class WebcamVision {
 
     public DetectedObject getFrontDetection() {
         if (tfod != null) {
-            Recognition[] recognitions = (Recognition[])tfod.getRecognitions().toArray();
-            if(recognitions.length > 0)
+            List<Recognition> recognitions = tfod.getRecognitions();
+            if(recognitions.size() > 0)
             {
-                if (recognitions[0].getLabel().equals(ObjectCodes.QUAD.toString()))
+                if (recognitions.get(0).getLabel().equals(ObjectCodes.QUAD.toString()))
                     return new DetectedObject(ObjectCodes.QUAD);
-                if (recognitions[0].getLabel().equals(ObjectCodes.SINGLE.toString()))
+                if (recognitions.get(0).getLabel().equals(ObjectCodes.SINGLE.toString()))
                     return new DetectedObject(ObjectCodes.SINGLE);
             }
 
 
         }
         return new DetectedObject(ObjectCodes.NO_OBJECT);
+    }
+
+
+    public void getAllDetections() {
+        if (tfod != null) {
+            List<Recognition> recognitions = tfod.getRecognitions();
+
+            for (Recognition r: recognitions) {
+                dashboardTelemetry.addLine(r.getLabel() + " " + r.getConfidence());
+            }
+            if(recognitions.size() == 0) dashboardTelemetry.addLine("NO_OBJECT");
+            dashboardTelemetry.update();
+        }
     }
 
 }
