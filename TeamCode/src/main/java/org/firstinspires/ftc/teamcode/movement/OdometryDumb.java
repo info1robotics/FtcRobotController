@@ -1,18 +1,34 @@
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.movement;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.movement.Chasis;
-import org.firstinspires.ftc.teamcode.movement.Power;
+import org.firstinspires.ftc.teamcode.teleop.TeleopMovement;
 
-public class TeleopMovement {
+public class OdometryDumb {
     Chasis chasis;
+    LinearOpMode opMode;
 
-    private Power currentPower;
+    double currentX, currentY;
 
-    public TeleopMovement(LinearOpMode opMode) {
+    public OdometryDumb(LinearOpMode opMode) {
         chasis = new Chasis(opMode);
-        currentPower = new Power(0);
+        this.opMode = opMode;
+    }
+
+    public void moveRel(double x, double y) {
+        chasis.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        TickGroup targetTick = new TickGroup(
+                (int)(x + y),
+                (int)(y - x),
+                (int)(y - x),
+                (int)(x + y)
+        );
+        chasis.setTargetPosition(targetTick);
+        chasis.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        moveXYT(x, y, 0);
+        while(chasis.isBusy() && opMode.opModeIsActive());
+
     }
 
     public void moveXYT(double x, double y, double t) {
@@ -22,11 +38,8 @@ public class TeleopMovement {
                 (y - x + t),
                 (x + y - t)
         );
-
         targetPower = normalizePower(targetPower);
-        currentPower.add(targetPower.minus(currentPower).divide(32));
-        if(targetPower.isZero()) currentPower = new Power(0);
-        chasis.setPower(currentPower);
+        chasis.setPower(targetPower);
     }
 
     private Power normalizePower(Power power) {

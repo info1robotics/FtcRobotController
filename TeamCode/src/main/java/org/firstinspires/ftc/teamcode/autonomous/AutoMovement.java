@@ -1,18 +1,21 @@
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
-abstract public class InputThread {
+import org.firstinspires.ftc.teamcode.teleop.InputThread;
+import org.firstinspires.ftc.teamcode.teleop.TeleopBase;
+
+public class AutoMovement{
     Thread thread;
     TeleopBase opMode;
-    public InputThread(final TeleopBase opMode) {
+    public AutoMovement(final TeleopBase opMode) {
         this.opMode = opMode;
         thread = new Thread() {
             @Override
             public void run() {
                 super.run();
                 while(opMode.opModeIsActive()) {
-                    InputThread.this.run();
+                    AutoMovement.this.run();
                     opMode.telemetry.update();
                     Thread.yield();
                 }
@@ -23,8 +26,15 @@ abstract public class InputThread {
         thread.start();
     }
 
-    protected abstract void cleanup();
+    protected void cleanup()
+    {
 
-    protected abstract void run();
+    }
+
+    protected void run()
+    {
+    }
+
+
 
 }

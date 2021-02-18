@@ -48,7 +48,7 @@ public class WebcamVision {
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, ObjectCodes.QUAD.toString(), ObjectCodes.SINGLE.toString());
-        tfod.setZoom(1.75, 1920.f/1080);
+        tfod.setZoom(1.25, 1920.f/1080);
 
         if (tfod != null) {
             tfod.activate();
