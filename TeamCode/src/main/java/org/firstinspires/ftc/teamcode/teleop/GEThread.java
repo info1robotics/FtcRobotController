@@ -7,7 +7,7 @@ public class GEThread extends InputThread {
     boolean spinning = false;
     public GEThread(TeleopBase opMode) {
         super(opMode);
-        opMode.wobble.let();
+        //opMode.wobble.let();
     }
 
     @Override
@@ -18,11 +18,11 @@ public class GEThread extends InputThread {
     @Override
     protected void run() {
         if(opMode.gamepad1.b) {
-            if(risen) {
-                opMode.wobble.lower();
-            } else {
-                opMode.wobble.raise();
-            }
+//            if(risen) {
+//                opMode.wobble.lower();
+//            } else {
+//                opMode.wobble.raise();
+//            }
             risen = !risen;
             try {
                 Thread.sleep(200);
@@ -32,11 +32,11 @@ public class GEThread extends InputThread {
         }
 
         if(opMode.gamepad1.a) {
-            if(hooked) {
-                opMode.wobble.let();
-            } else {
-                opMode.wobble.get();
-            }
+//            if(hooked) {
+//                opMode.wobble.let();
+//            } else {
+//                opMode.wobble.get();
+//            }
             hooked = !hooked;
             try {
                 Thread.sleep(200);

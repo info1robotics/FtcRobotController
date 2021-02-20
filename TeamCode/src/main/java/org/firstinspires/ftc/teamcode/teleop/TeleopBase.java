@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.vision.WebcamVision;
 abstract public class TeleopBase extends LinearOpMode {
 
     TeleopMovement movement;
-    WobbleHandler wobble;
     Launcher launcher;
+    WobbleHandler wobble;
 
 
     @Override
