@@ -19,8 +19,5 @@ dependencies {
     implementation 'org.firstinspires.ftc:tfod:1.0.2'
     implementation 'org.tensorflow:tensorflow-lite:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation group: 'org.jruby', name: 'jruby-complete', version: '9.2.19.0'
-
-
 }
 
