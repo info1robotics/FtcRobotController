@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.X;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Gamepad {
+public class GamepadEx {
 
 	private com.qualcomm.robotcore.hardware.Gamepad gamepad;
 
@@ -39,34 +40,38 @@ public class Gamepad {
 	private boolean[] buttonDown = new boolean[15];
 	private boolean[] buttonUp = new boolean[15];
 
-	// not used
 	private float[] analog = new float[6];
-
-	private class Joystick {
-		public float x = 0, y = 0;
-	}
-	public Joystick leftJoystick, rightJoystick;
-	public float leftTrigger, rightTrigger;
 
 	// TODO update to java 8 way when possible
 	public static final HashMap<String, Integer> buttonName = new HashMap<String, Integer>() {{
-		put("start", 1);
+		put("start", 0);
 		put("back", 1);
-		put("mode", 1);
-		put("a", 1);
-		put("b", 1);
-		put("x", 1);
-		put("y", 1);
-		put("dpad_up", 1);
-		put("dpad_right", 1);
-		put("dpad_down", 1);
-		put("dpad_left", 1);
-		put("bumper_left", 1);
-		put("bumper_right", 1);
-		put("joystick_left", 1);
-		put("joystick_right", 1);
+		put("mode", 2);
+		put("a", 3);
+		put("b", 4);
+		put("x", 5);
+		put("y", 6);
+		put("dpad_up", 7);
+		put("dpad_right", 8);
+		put("dpad_down", 9);
+		put("dpad_left", 10);
+		put("bumper_left", 11);
+		put("bumper_right", 12);
+		put("joystick_left", 13);
+		put("joystick_right", 14);
 	}};
-	public void Gamepad(com.qualcomm.robotcore.hardware.Gamepad gamepad)
+
+	public static final HashMap<String, Integer> analogName = new HashMap<String, Integer>() {{
+		put("left_x", 0);
+		put("left_y", 1);
+		put("right_x", 2);
+		put("right_y", 3);
+		put("left_trigger", 4);
+		put("right_trigger", 5);
+
+	}};
+
+	public GamepadEx(com.qualcomm.robotcore.hardware.Gamepad gamepad)
 	{
 		this.gamepad = gamepad;
 		update();
@@ -74,12 +79,12 @@ public class Gamepad {
 
 	public void update()
 	{
-		leftJoystick.x 		= gamepad.left_stick_x;
-		leftJoystick.y 		= gamepad.left_stick_y;
-		rightJoystick.x 	= gamepad.right_stick_x;
-		rightJoystick.y 	= gamepad.right_stick_y;
-		leftTrigger 		= gamepad.left_trigger;
-		rightTrigger 		= gamepad.right_trigger;
+		analog[0]	= gamepad.left_stick_x;
+		analog[1]	= gamepad.left_stick_y;
+		analog[2]	= gamepad.right_stick_x;
+		analog[3]	= gamepad.right_stick_y;
+		analog[4]	= gamepad.left_trigger;
+		analog[5]	= gamepad.right_trigger;
 
 		boolean[] newButtonState = new boolean[15];
 
@@ -107,6 +112,8 @@ public class Gamepad {
 		}
 		buttonState = newButtonState;
 	}
+
+	public float getAnalog(String analog) {return this.analog[analogName.get(analog)];}
 
 	public boolean getButton(String button)
 	{

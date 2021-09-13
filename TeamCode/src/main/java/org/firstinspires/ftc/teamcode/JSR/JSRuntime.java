@@ -5,6 +5,8 @@ import com.eclipsesource.v8.V8ScriptCompilationException;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.X.GamepadEx;
+
 import fi.iki.elonen.NanoWSD;
 
 import java.io.IOException;
@@ -40,15 +42,22 @@ public class JSRuntime {
         Thread.sleep(milis);
     }
 
-    public JSRuntime(LinearOpMode opMode) throws IOException {
+    public JSRuntime(LinearOpMode opMode, GamepadEx gamepad) throws IOException {
 
         this.opMode = opMode;
 
         v8 = V8.createV8Runtime();
 
+        // Utils
         v8.registerJavaMethod(this, "print", "print", new Class<?>[] { String.class });
         v8.registerJavaMethod(this, "sleep", "sleep", new Class<?>[] { int.class });
-//
+
+        // Gamepad
+        v8.registerJavaMethod(gamepad, "getButton", "getButton", new Class<?>[] { String.class });
+        v8.registerJavaMethod(gamepad, "getButtonDown", "getButtonDown", new Class<?>[] { String.class });
+        v8.registerJavaMethod(gamepad, "getButtonUp", "getButtonUp", new Class<?>[] { String.class });
+        v8.registerJavaMethod(gamepad, "getAnalog", "getAnalog", new Class<?>[] { String.class });
+
         v8.getLocker().release();
     }
 
