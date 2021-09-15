@@ -21,4 +21,12 @@ android {
     }
 }
 
+dependencies {
+
+    api(project(':RVM')) {
+        exclude module: 'gson'
+        exclude module: 'nanohttpd'
+    }
+}
+
 apply from: '../build.dependencies.gradle'

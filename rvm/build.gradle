@@ -1,0 +1,22 @@
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+
+}
+
+dependencies {
+
+    api('org.nanohttpd:nanohttpd-websocket:2.3.1')
+
+    // https://mvnrepository.com/artifact/com.eclipsesource.j2v8/j2v8_macosx_x86_64
+//    api 'com.eclipsesource.j2v8:j2v8_macosx_x86_64:4.6.0'
+
+    // https://mvnrepository.com/artifact/com.eclipsesource.j2v8/j2v8
+    api 'com.eclipsesource.j2v8:j2v8:6.2.1@aar'
+
+// https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation 'com.google.code.gson:gson:2.8.8'
+
+}

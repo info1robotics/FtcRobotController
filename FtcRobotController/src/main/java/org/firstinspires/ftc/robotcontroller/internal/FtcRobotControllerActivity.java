@@ -45,11 +45,14 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -64,6 +67,8 @@ import android.widget.TextView;
 
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
+import com.info1robotics.rvm.RVRuntime;
+import com.info1robotics.rvm.RVRuntimeWebSocketServer;
 import com.qualcomm.ftccommon.ClassManagerFactory;
 import com.qualcomm.ftccommon.FtcAboutActivity;
 import com.qualcomm.ftccommon.FtcEventLoop;
@@ -123,6 +128,7 @@ import org.firstinspires.ftc.robotcore.internal.webserver.RobotControllerWebInfo
 import org.firstinspires.ftc.robotserver.internal.programmingmode.ProgrammingModeManager;
 import org.firstinspires.inspection.RcInspectionActivity;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -383,6 +389,8 @@ public class FtcRobotControllerActivity extends Activity
 
     // check to see if there is a preferred Wi-Fi to use.
     checkPreferredChannel();
+
+
   }
 
   protected UpdateUI createUpdateUI() {
@@ -402,6 +410,17 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   protected void onStart() {
     super.onStart();
+
+    // CUSTOM
+    RVRuntime.getInstance();
+    RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
+    try {
+      rvWebServer.start(-1, true);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
     RobotLog.vv(TAG, "onStart()");
 
     entireScreenLayout.setOnTouchListener(new View.OnTouchListener() {
