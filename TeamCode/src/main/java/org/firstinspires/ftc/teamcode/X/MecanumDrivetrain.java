@@ -1,51 +1,39 @@
 package org.firstinspires.ftc.teamcode.X;
 
+import com.info1robotics.rvm.RVComponent;
+import com.info1robotics.rvm.RVRegister;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-public class MecanumDrivetrain {
+public class MecanumDrivetrain extends RVComponent {
 
-    private static OpMode opMode;
-    private static DcMotor flMotor, frMotor, blMotor, brMotor;
-    private static String flMotorName, frMotorName, blMotorName, brMotorName;
-    private static float maxPower;
+    private DcMotor flMotor, frMotor, blMotor, brMotor;
+    private double maxPower = 1.0f;
 
-    public static void init(OpMode opMode, String frontLeftMotor, String frontRightMotor, String backtLeftMotor, String backRightMotor, float maxPower)
+    public MecanumDrivetrain(OpMode opMode, String frontLeftMotor, String frontRightMotor, String backLeftMotor, String backRightMotor)
     {
-        MecanumDrivetrain.opMode = opMode;
-        MecanumDrivetrain.maxPower = maxPower;
-
-        flMotorName = frontLeftMotor;
-        frMotorName = frontRightMotor;
-        blMotorName = backtLeftMotor ;
-        brMotorName = backRightMotor;
-
-        flMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, flMotorName);
-        frMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, frMotorName);
-        blMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, blMotorName);
-        brMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, brMotorName);
+        flMotor = opMode.hardwareMap.get(DcMotor.class, frontLeftMotor);
+        frMotor = opMode.hardwareMap.get(DcMotor.class, frontRightMotor);
+        blMotor = opMode.hardwareMap.get(DcMotor.class, backLeftMotor);
+        brMotor = opMode.hardwareMap.get(DcMotor.class, backRightMotor);
     }
 
-    public static void updateOpMode(OpMode opMode)
+
+    @RVRegister
+    public void Mecanum_setMaxPower(double maxPower)
     {
-        MecanumDrivetrain.opMode = opMode;
-        flMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, flMotorName);
-        frMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, frMotorName);
-        blMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, blMotorName);
-        brMotor = MecanumDrivetrain.opMode.hardwareMap.get(DcMotor.class, brMotorName);
+        this.maxPower = maxPower;
     }
 
-    public static void setMaxPower(float maxPower)
-    {
-        MecanumDrivetrain.maxPower = maxPower;
-    }
-    public static float getMaxPower()
+    @RVRegister
+    public double Mecanum_getMaxPower()
     {
         return maxPower;
     }
 
     // de implementat custom input curve
-    public static void moveTowards(float x, float y, float t)
+    @RVRegister
+    public void Mecanum_moveTowards(float x, float y, float t)
     {
         float[] targetPower = normalize( new float[]{
                 (x + y + t),
@@ -54,14 +42,14 @@ public class MecanumDrivetrain {
                 (x + y - t)
         }, maxPower);
 
-        flMotor.setPower(targetPower[0] * maxPower);
-        frMotor.setPower(targetPower[1] * maxPower);
-        blMotor.setPower(targetPower[2] * maxPower);
-        brMotor.setPower(targetPower[3] * maxPower);
+        flMotor.setPower(targetPower[0]);
+        frMotor.setPower(targetPower[1]);
+        blMotor.setPower(targetPower[2]);
+        brMotor.setPower(targetPower[3]);
 
     }
 
-    private static float[] normalize(float[] values, float maxPower)
+    private float[] normalize(float[] values, double maxPower)
     {
         if (Math.abs(values[0]) > 1 || Math.abs(values[2]) > 1 ||
                 Math.abs(values[1]) > 1 || Math.abs(values[3]) > 1) {
@@ -69,6 +57,7 @@ public class MecanumDrivetrain {
             max = Math.max(Math.abs(values[0]), Math.abs(values[2]));
             max = Math.max(Math.abs(values[1]), max);
             max = Math.max(Math.abs(values[3]), max);
+            max = Math.min(max, maxPower);
 
             values[0] /= max;
             values[1] /= max;

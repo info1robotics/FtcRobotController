@@ -267,6 +267,17 @@ public class FtcRobotControllerActivity extends Activity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+
+    // CUSTOM
+    RVRuntime.getInstance();
+    RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
+    try {
+      rvWebServer.start(-1, true);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
     if (enforcePermissionValidator()) {
       return;
     }
@@ -410,15 +421,6 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   protected void onStart() {
     super.onStart();
-
-    // CUSTOM
-    RVRuntime.getInstance();
-    RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
-    try {
-      rvWebServer.start(-1, true);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
 
 
     RobotLog.vv(TAG, "onStart()");

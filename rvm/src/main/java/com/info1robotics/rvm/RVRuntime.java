@@ -3,10 +3,19 @@ package com.info1robotics.rvm;
 import com.eclipsesource.v8.JavaVoidCallback;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8Function;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8ScriptCompilationException;
+import com.eclipsesource.v8.V8ScriptException;
 
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class RVRuntime {
 
@@ -46,6 +55,7 @@ public class RVRuntime {
             }
         }, "print");
 
+
         v8.getLocker().release();
     }
 
@@ -56,7 +66,7 @@ public class RVRuntime {
         try {
             v8.executeVoidScript(data);
         } catch (V8ScriptCompilationException e) {
-            e.printStackTrace();
+            printMessage(e.getJSStackTrace());
         }
 
         v8.getLocker().release();
@@ -65,24 +75,45 @@ public class RVRuntime {
 
     public void runInitScript() {
         v8.getLocker().acquire();
-        v8.executeJSFunction("init");
+        try {
+            v8.executeJSFunction("init");
+        } catch(V8ScriptException e) {
+            printMessage(e.getJSMessage());
+        }
         v8.getLocker().release();
     }
 
     public void runTeleOpScript() {
         v8.getLocker().acquire();
-        v8.executeJSFunction("teleop");
+        try {
+            v8.executeJSFunction("teleop");
+        } catch (V8ScriptException e) {
+            printMessage(e.getJSMessage());
+        }
         v8.getLocker().release();
     }
 
     public void runAutonomousScript() {
         v8.getLocker().acquire();
-        v8.executeJSFunction("autonomous");
+        try {
+            v8.executeJSFunction("autonomous");
+        } catch (V8ScriptException e) {
+            printMessage(e.getJSMessage());
+        }
         v8.getLocker().release();
     }
 
     public void registerPrintCallback(JavaVoidCallback callback) {
         printCallbacks.add(callback);
+    }
+
+    private void printMessage(String msg) {
+        for (JavaVoidCallback printCallback :
+                printCallbacks) {
+            V8Array arr = new V8Array(v8);
+            arr.push(msg);
+            printCallback.invoke(v8, arr);
+        }
     }
 
 }
