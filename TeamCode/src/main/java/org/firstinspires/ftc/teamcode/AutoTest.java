@@ -1,24 +1,37 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-@Disabled
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+
 @Autonomous
 public class AutoTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        DcMotor motor = hardwareMap.get(DcMotor.class, "motor");
+//        DcMotor motor = hardwareMap.get(DcMotor.class, "motor");
+//        waitForStart();
+//        while (opModeIsActive())
+//        {
+
+        telemetry.addLine("Boot key: " + FtcRobotControllerActivity.RVM_IS_KEY_ACTIVE);
+
+//        DigitalChannel RVkey =  hardwareMap.get(DigitalChannel.class, "RVM_SERVER_STATE_KEY");
+//      HardwareMap hMap = eventLoop.getOpModeManager().getHardwareMap();
+//      DigitalChannel RVkey = hMap.get(DigitalChannel.class, "key");
+//        RVkey.setMode(DigitalChannel.Mode.INPUT);
+//        telemetry.addLine("Current key: " + RVkey.getState());
+
+        telemetry.update();
+//
         waitForStart();
-        while (opModeIsActive())
-        {
-            telemetry.addLine(Integer.toString(motor.getCurrentPosition()));
-            telemetry.update();
-        }
+//        }
 
 //        DcMotor fl = hardwareMap.get(DcMotor.class, "motorFL");
 //        DcMotor fr = hardwareMap.get(DcMotor.class, "motorFR");

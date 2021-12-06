@@ -45,7 +45,6 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
@@ -67,7 +66,6 @@ import android.widget.TextView;
 
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
-import com.info1robotics.rvm.RVRuntime;
 import com.info1robotics.rvm.RVRuntimeWebSocketServer;
 import com.qualcomm.ftccommon.ClassManagerFactory;
 import com.qualcomm.ftccommon.FtcAboutActivity;
@@ -90,6 +88,7 @@ import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.eventloop.opmode.FtcRobotControllerServiceState;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.robot.Robot;
@@ -138,6 +137,8 @@ public class FtcRobotControllerActivity extends Activity
   {
   public static final String TAG = "RCActivity";
   public String getTag() { return TAG; }
+
+  public static boolean RVM_IS_KEY_ACTIVE = false;
 
   private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
   private static final int NUM_GAMEPADS = 2;
@@ -266,17 +267,6 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-
-    // CUSTOM
-    RVRuntime.getInstance();
-    RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
-    try {
-      rvWebServer.start(-1, true);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
 
     if (enforcePermissionValidator()) {
       return;
@@ -731,6 +721,31 @@ public class FtcRobotControllerActivity extends Activity
     controllerService.setCallback(callback);
     controllerService.setupRobot(eventLoop, idleLoop, runOnComplete);
 
+    // RVM CUSTOM
+    new Thread(new Runnable() {
+      public void run() {
+        while (!eventLoop.getOpModeManager().getHardwareMap().digitalChannel.contains("RVM_SERVER_STATE_KEY"))
+          Thread.yield();
+        Log.d("RVM_DEBUG", "Server initialized");
+        DigitalChannel RVkey = eventLoop.getOpModeManager().getHardwareMap().get(DigitalChannel.class, "RVM_SERVER_STATE_KEY");
+        RVkey.setMode(DigitalChannel.Mode.INPUT);
+        RVM_IS_KEY_ACTIVE = !RVkey.getState();
+
+        if(RVM_IS_KEY_ACTIVE)
+        {
+          RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
+          try {
+            rvWebServer.start(-1, true);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+
+      }
+    }
+    ).start();
+    // /RVM CUSTOM
+
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();
   }
@@ -836,4 +851,5 @@ public class FtcRobotControllerActivity extends Activity
       wifiMuteStateMachine.consumeEvent(WifiMuteEvent.USER_ACTIVITY);
     }
   }
+
 }

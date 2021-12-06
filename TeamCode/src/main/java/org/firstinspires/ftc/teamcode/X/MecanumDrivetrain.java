@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.X;
 
-import com.info1robotics.rvm.RVComponent;
-import com.info1robotics.rvm.RVRegister;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-public class MecanumDrivetrain extends RVComponent {
+public class MecanumDrivetrain{
 
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private double maxPower = 1.0f;
@@ -19,20 +17,17 @@ public class MecanumDrivetrain extends RVComponent {
     }
 
 
-    @RVRegister
     public void Mecanum_setMaxPower(double maxPower)
     {
         this.maxPower = maxPower;
     }
 
-    @RVRegister
     public double Mecanum_getMaxPower()
     {
         return maxPower;
     }
 
     // de implementat custom input curve
-    @RVRegister
     public void Mecanum_moveTowards(float x, float y, float t)
     {
         float[] targetPower = normalize( new float[]{
