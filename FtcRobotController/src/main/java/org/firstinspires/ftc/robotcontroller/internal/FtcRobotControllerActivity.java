@@ -66,6 +66,7 @@ import android.widget.TextView;
 
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
+import com.info1robotics.rvm.RVLocalStorage;
 import com.info1robotics.rvm.RVRuntimeWebSocketServer;
 import com.qualcomm.ftccommon.ClassManagerFactory;
 import com.qualcomm.ftccommon.FtcAboutActivity;
@@ -722,29 +723,29 @@ public class FtcRobotControllerActivity extends Activity
     controllerService.setupRobot(eventLoop, idleLoop, runOnComplete);
 
     // RVM CUSTOM
-    new Thread(new Runnable() {
-      public void run() {
-        while (!eventLoop.getOpModeManager().getHardwareMap().digitalChannel.contains("RVM_SERVER_STATE_KEY"))
-          Thread.yield();
-        Log.d("RVM_DEBUG", "Server initialized");
-        DigitalChannel RVkey = eventLoop.getOpModeManager().getHardwareMap().get(DigitalChannel.class, "RVM_SERVER_STATE_KEY");
-        RVkey.setMode(DigitalChannel.Mode.INPUT);
-        RVM_IS_KEY_ACTIVE = !RVkey.getState();
+    new Thread(() -> {
+      while (!eventLoop.getOpModeManager().getHardwareMap().digitalChannel.contains("RVM_SERVER_STATE_KEY"))
+        Thread.yield();
+      Log.d("RVM_DEBUG", "Server initialized");
+      DigitalChannel RVkey = eventLoop.getOpModeManager().getHardwareMap().get(DigitalChannel.class, "RVM_SERVER_STATE_KEY");
+      RVkey.setMode(DigitalChannel.Mode.INPUT);
+      RVM_IS_KEY_ACTIVE = !RVkey.getState();
 
-        if(RVM_IS_KEY_ACTIVE)
-        {
-          RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
-          try {
-            rvWebServer.start(-1, true);
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
+      if(RVM_IS_KEY_ACTIVE)
+      {
+        RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
+        try {
+          rvWebServer.start(-1, true);
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-
       }
+
     }
     ).start();
     // /RVM CUSTOM
+
+    RVLocalStorage.init();
 
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();

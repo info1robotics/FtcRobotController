@@ -55,7 +55,7 @@ public class RVMOpModeSkeleton extends LinearOpMode {
 		opModeManager = (OpModeManagerImpl) internalOpModeServices;
 
 		v8 = V8.createV8Runtime();
-		v8.executeVoidScript(RVLocalStorage.readFile(scriptPath));
+		v8.executeVoidScript(RVLocalStorage.getInstance().readFile(scriptPath));
 
 		// ---- Inject Java methods ----
 		v8.registerJavaMethod(this, "isRVMDebug", "isRVMDebugActive", new Class[]{});

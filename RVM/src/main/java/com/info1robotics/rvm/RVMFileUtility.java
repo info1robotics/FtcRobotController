@@ -20,7 +20,7 @@ public class RVMFileUtility {
 		for (String filePath: files) {
 			JsonObject file = new JsonObject();
 			file.addProperty("name", filePath.substring(5).replace('$', '/'));
-			file.addProperty("content", RVLocalStorage.readFile(filePath));
+			file.addProperty("content", RVLocalStorage.getInstance().readFile(filePath));
 			fs.add(file);
 		}
 		return fs;
@@ -35,7 +35,7 @@ public class RVMFileUtility {
 			if(filePath.matches(".*\\." + extension + "$"))
 			{
 				Log.d("RVM_DEBUG", "hhh" + filePath);
-				files.add(new RVMFile(filePath.substring(5).replace('$', '/'),filePath,  null, RVLocalStorage.readFile(filePath)));
+				files.add(new RVMFile(filePath.substring(5).replace('$', '/'),filePath,  null, RVLocalStorage.getInstance().readFile(filePath)));
 				Log.d("RVM_DEBUG", "hhh" + files.get(files.size() - 1).hasFlag("auto"));
 			}
 		}
@@ -48,7 +48,7 @@ public class RVMFileUtility {
 		Iterator<JsonElement> files = json.get("files").getAsJsonArray().iterator();
 		while (files.hasNext()) {
 			JsonObject file = files.next().getAsJsonObject();
-			RVLocalStorage.saveFile("$RVM$" + file.get("name").getAsString().replace('/', '$'), file.get("content").getAsString());
+			RVLocalStorage.getInstance().saveFile("$RVM$" + file.get("name").getAsString().replace('/', '$'), file.get("content").getAsString());
 		}
 	}
 

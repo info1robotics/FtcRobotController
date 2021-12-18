@@ -11,13 +11,21 @@ import java.lang.reflect.Method;
 
 public class RVLocalStorage {
 
+	private static RVLocalStorage instance;
 	private static Context context;
+
+
+	public RVLocalStorage() { }
+
+	public static RVLocalStorage getInstance() {
+		if(instance == null) instance = new RVLocalStorage();
+		return instance;
+	}
 
 	public static boolean init()
 	{
 		if(context == null) context = getContext();
-		if(context == null) return false;
-		return true;
+		return context != null;
 	}
 
 	public static String[] listFiles()
@@ -25,7 +33,7 @@ public class RVLocalStorage {
 		return context.fileList();
 	}
 
-	public static void saveFile(String filename, String data)
+	public void saveFile(String filename, String data)
 	{
 		try
 		{
@@ -40,7 +48,8 @@ public class RVLocalStorage {
 		}
 	}
 
-	public static String readFile(String filename)
+	public boolean deleteFile()
+	public String readFile(String filename)
 	{
 		try {
 			FileInputStream fin = context.openFileInput(filename);

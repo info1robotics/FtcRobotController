@@ -54,12 +54,10 @@ public class RVRuntimeWebSocket extends NanoWSD.WebSocket {
         try {
             JsonObject obj = gson.fromJson(message.getTextPayload(), JsonObject.class).getAsJsonObject();
             OpType op = OpType.valueOf(obj.get("op").getAsString());
-            int status = obj.get("status").getAsInt();
             JsonObject data = obj.get("data").getAsJsonObject();
             System.out.println(data.toString());
             switch (op)
             {
-
                 case LOAD_PROJECT:
                     ops.loadProject(data);
                     break;
