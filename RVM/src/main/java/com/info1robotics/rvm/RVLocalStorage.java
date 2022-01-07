@@ -48,7 +48,6 @@ public class RVLocalStorage {
 		}
 	}
 
-	public boolean deleteFile()
 	public String readFile(String filename)
 	{
 		try {
