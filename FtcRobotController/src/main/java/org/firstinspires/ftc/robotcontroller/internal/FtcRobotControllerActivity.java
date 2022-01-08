@@ -64,6 +64,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
 import com.info1robotics.rvm.RVLocalStorage;
@@ -319,6 +320,7 @@ public class FtcRobotControllerActivity extends Activity
           }
         });
         popupMenu.inflate(R.menu.ftc_robot_controller);
+        FtcDashboard.populateMenu(getBaseContext(), popupMenu.getMenu());
         popupMenu.show();
       }
     });
@@ -392,7 +394,7 @@ public class FtcRobotControllerActivity extends Activity
     // check to see if there is a preferred Wi-Fi to use.
     checkPreferredChannel();
 
-
+    FtcDashboard.start(this);
   }
 
   protected UpdateUI createUpdateUI() {
@@ -463,6 +465,8 @@ public class FtcRobotControllerActivity extends Activity
     if (preferencesHelper != null) preferencesHelper.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(sharedPreferencesListener);
 
     RobotLog.cancelWriteLogcatToDisk();
+
+    FtcDashboard.stop(this);
   }
 
   protected void bindToService() {
@@ -528,6 +532,8 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.ftc_robot_controller, menu);
+    FtcDashboard.populateMenu(this, menu);
+
     return true;
   }
 
@@ -685,6 +691,8 @@ public class FtcRobotControllerActivity extends Activity
         return service.getRobot().eventLoopManager;
       }
     });
+
+    FtcDashboard.attachWebServer(this, service.getWebServer().getWebHandlerManager());
   }
 
   private void updateUIAndRequestRobotSetup() {
@@ -742,13 +750,15 @@ public class FtcRobotControllerActivity extends Activity
       }
 
     }
-    ).start();
+    );//.start();
     // /RVM CUSTOM
 
     RVLocalStorage.init();
 
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();
+
+    FtcDashboard.attachEventLoop(this, eventLoop);
   }
 
   protected OpModeRegister createOpModeRegister() {
