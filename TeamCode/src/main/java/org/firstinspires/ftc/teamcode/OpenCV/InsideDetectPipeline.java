@@ -1,25 +1,33 @@
 package org.firstinspires.ftc.teamcode.OpenCV;
 
+import com.acmerobotics.dashboard.config.Config;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import java.util.List;
+import static org.firstinspires.ftc.teamcode.ColorTestOpMode.PIXELS_RATIO;
 
+@Config
 public class InsideDetectPipeline extends OpenCvPipeline {
 
+
     Mat mat = new Mat();
-    Mat gateMat = new Mat();
+    Mat gateMatYellow = new Mat();
+    Mat gateMatWhite = new Mat();
 
+    Telemetry telemetry;
 
-    final int MIN_PIXELS = 61440;
 
     boolean pieceDetected = false;
+
+    public InsideDetectPipeline(Telemetry telemetry) {
+        this.telemetry = telemetry;
+    }
 
     @Override
     public Mat processFrame(Mat input) {
@@ -29,26 +37,29 @@ public class InsideDetectPipeline extends OpenCvPipeline {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
         Imgproc.blur(mat, mat, new Size(5, 5));
 
-        Scalar lowHSV = new Scalar(0, 0, 80);
-        Scalar highHSV = new Scalar(70, 255, 255);
+        // Yellow
+        Scalar lowHSV = new Scalar(0, 150, 120);
+        Scalar highHSV = new Scalar(45, 255, 255);
 
-        Core.inRange(mat, lowHSV, highHSV, gateMat);
+        Core.inRange(mat, lowHSV, highHSV, gateMatYellow);
 
-        Mat edges = new Mat();
-//        Imgproc.Canny(gateMat, edges, 150, 255);
-//
-//        gateMat = gateMat
-        double correspondingPixels = Core.sumElems(gateMat).val[0] / gateMat.size().area() / 255;
+        // White
+        lowHSV = new Scalar(0, 0, 230);
+        highHSV = new Scalar(255, 50, 255);
 
-//        List<MatOfPoint> Points;
-//
-//        Imgproc.findContours(gateMat, Points, );
+        Core.inRange(mat, lowHSV, highHSV, gateMatWhite);
 
-        Imgproc.cvtColor(gateMat, gateMat, Imgproc.COLOR_GRAY2RGB);
+            Core.bitwise_or(gateMatWhite, gateMatYellow, gateMatYellow);
 
-        edges.release();
+        double ratio = Core.sumElems(gateMatYellow).val[0] / gateMatYellow.size().area() / 255;
 
-        return gateMat;
+        pieceDetected = ratio >= PIXELS_RATIO;
+
+
+        Imgproc.cvtColor(gateMatYellow, gateMatYellow, Imgproc.COLOR_GRAY2RGB);
+
+
+        return gateMatYellow;
     }
 
     public boolean pieceInside() { return pieceDetected; }
