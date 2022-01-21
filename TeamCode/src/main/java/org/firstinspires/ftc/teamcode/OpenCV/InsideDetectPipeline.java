@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.OpenCV;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.mechanisms.IntakeMechanism;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -10,7 +11,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import static org.firstinspires.ftc.teamcode.ColorTestOpMode.PIXELS_RATIO;
 
 @Config
 public class InsideDetectPipeline extends OpenCvPipeline {
@@ -53,7 +53,7 @@ public class InsideDetectPipeline extends OpenCvPipeline {
 
         double ratio = Core.sumElems(gateMatYellow).val[0] / gateMatYellow.size().area() / 255;
 
-        pieceDetected = ratio >= PIXELS_RATIO;
+        pieceDetected = ratio >= IntakeMechanism.PIXELS_RATIO;
 
 
         Imgproc.cvtColor(gateMatYellow, gateMatYellow, Imgproc.COLOR_GRAY2RGB);
