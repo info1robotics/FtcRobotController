@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.mechanisms;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -20,19 +21,23 @@ public class IntakeMechanism {
 
     // FFF IMPORTANT LA TUNING: FALSE POSITIVES MULT MAI OK DECAT FALSE NEGATIVES!
     public static double PIXELS_RATIO = 0.53f;
-    public static double DETECTION_COOLDOWN_SEC = 0.4;
     public static double DETECTION_TRY_TIME_SEC = 100;
     public static double INTAKE_MOTOR_POWER = -1;
-    // "motorFL" -- temporary hack
-    public static String INTAKE_MOTOR_NAME = "motorFL";
+    public static double INTERMEDIARY_MOTOR_POWER = 1;
+    // "motorBR" -- temporary hack
+    public static String INTAKE_MOTOR_NAME = "intakeMotor";
+    public static String INTERMEDIARY_MOTOR_NAME = "intermediaryMotor";
     public static String INTAKE_SERVO_NAME = "intakeServo";
     public static double INTAKE_SERVO_ENGAGED_POS = 1.0f;
     public static double INTAKE_SERVO_IDLE_POS = 0.0f;
 
+    Thread workThread;
+    volatile boolean lastResult;
 
 
-    DcMotor intakeMotor;
+    DcMotor intakeMotor, intermediaryMotor;
     Servo intakeServo;
+
 
     WebcamName webcamName;
     OpenCvCamera camera;
@@ -42,14 +47,13 @@ public class IntakeMechanism {
 
     int elementsCount = 0;
 
-    final AtomicBoolean isEngaged = new AtomicBoolean(false);
-
-
-
     public IntakeMechanism(OpMode opMode) {
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
 
         insideDetectPipeline = new InsideDetectPipeline(opMode.telemetry);
+
+
+        this.opMode = opMode;
 
 
         webcamName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -63,74 +67,89 @@ public class IntakeMechanism {
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         intakeServo = opMode.hardwareMap.get(Servo.class, INTAKE_SERVO_NAME);
+        intakeServo.setPosition(0);
 
-        this.opMode = opMode;
+        intermediaryMotor = opMode.hardwareMap.get(DcMotor.class, INTERMEDIARY_MOTOR_NAME);
+
     }
+
+    public void DEB_ToggleIntermediary() {
+        if(intermediaryMotor.getPower() > 0)
+            intermediaryMotor.setPower(0);
+        else
+            intermediaryMotor.setPower(1);
+    }
+
+    public void DEB_ToggleIntake() {
+        if(intakeMotor.getPower() < 0)
+            intakeMotor.setPower(0);
+        else
+            intakeMotor.setPower(-1);
+    }
+
+    public void DEB_ToggleServo() {
+        if(intakeServo.getPosition() == 1)
+            intakeServo.setPosition(0);
+        else
+            intakeServo.setPosition(1);
+    }
+
+    public boolean workHasFinished() {
+        return workThread == null || (!workThread.isAlive());
+    }
+
+    public boolean getLastResult() { return lastResult; }
 
     public int getElementsCount() { return elementsCount; }
 
-    public boolean isEngaged() { return isEngaged.get(); }
-
-    public void setIsEngaged(boolean value) { isEngaged.set(value); }
-
+    public void toggleDirection()
+    {
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
 
     boolean actionate()
     {
-        // (positively?) insane method for changing a variable in inner and reading it in outer
-        final boolean[] giveUp = {false};
+        try {
+            // (positively?) insane method for changing a variable in inner and reading it in outer
 
-        intakeMotor.setPower(INTAKE_MOTOR_POWER);
-        intakeServo.setPosition(INTAKE_SERVO_ENGAGED_POS);
+            intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+            intakeMotor.setPower(INTAKE_MOTOR_POWER);
+            intermediaryMotor.setPower(INTERMEDIARY_MOTOR_POWER);
+            intakeServo.setPosition(INTAKE_SERVO_ENGAGED_POS);
 
-        Timer giveUpTimer = new Timer();
+            while(!Thread.interrupted()) {
+                camera.openCameraDevice();
 
-        giveUpTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                giveUp[0] = true;
-            }
-        }, (int)(DETECTION_TRY_TIME_SEC * 1000));
-
-
-        while(!giveUp[0] && isEngaged.get()) {
-            camera.openCameraDevice();
-
-            if(insideDetectPipeline.pieceInside()) {
-                elementsCount++;
-                giveUpTimer.cancel();
-                break;
-            }
-            Thread.yield();
-        }
-
-        intakeMotor.setPower(0);
-        intakeServo.setPosition(INTAKE_SERVO_IDLE_POS);
-
-        return !giveUp[0] && isEngaged.get();
-    }
-
-    public void actionateAsync(ActionateCallback actionateCallback)
-    {
-        if(isEngaged()) return;
-        setIsEngaged(true);
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                if(actionateCallback != null) {
-                    boolean result = actionate();
-                    actionateCallback.onActionateFinished(result);
-                } else {
-                    actionate();
+                if(insideDetectPipeline.pieceInside()) {
+                    elementsCount++;
+                    break;
                 }
-                setIsEngaged(false);
+                Thread.yield();
             }
 
-        };
-        t.start();
+            intakeServo.setPosition(INTAKE_SERVO_IDLE_POS);
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {
+            return false;
+        } finally {
+            intakeMotor.setPower(0);
+            intakeServo.setPosition(INTAKE_SERVO_IDLE_POS);
+            intermediaryMotor.setPower(0);
+        }
+        return !Thread.interrupted();
     }
 
-    public interface ActionateCallback {
-        void onActionateFinished(boolean caughtPiece);
+    public void startWorkAsync() {
+        if(!workHasFinished()) return;
+
+        workThread = new Thread(() -> {
+            lastResult = actionate();
+        });
+        workThread.start();
+    }
+
+    public void interruptWork() {
+        if(!workHasFinished())
+            workThread.interrupt();
     }
 }
