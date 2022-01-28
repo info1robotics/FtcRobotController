@@ -20,10 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IntakeMechanism {
 
     // FFF IMPORTANT LA TUNING: FALSE POSITIVES MULT MAI OK DECAT FALSE NEGATIVES!
-    public static double PIXELS_RATIO = 0.53f;
+    public static double PIXELS_RATIO = 0.30f;
     public static double DETECTION_TRY_TIME_SEC = 100;
     public static double INTAKE_MOTOR_POWER = -1;
-    public static double INTERMEDIARY_MOTOR_POWER = 1;
+    public static double INTERMEDIARY_MOTOR_POWER = -1;
     // "motorBR" -- temporary hack
     public static String INTAKE_MOTOR_NAME = "intakeMotor";
     public static String INTERMEDIARY_MOTOR_NAME = "intermediaryMotor";
@@ -58,10 +58,20 @@ public class IntakeMechanism {
 
         webcamName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-        camera.openCameraDevice();
-        camera.setViewportRenderer(OpenCvCamera.ViewportRenderer.GPU_ACCELERATED);
-        camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
         camera.setPipeline(insideDetectPipeline);
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+//                camera.setViewportRenderer(OpenCvCamera.ViewportRenderer.GPU_ACCELERATED);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                opMode.telemetry.addLine("Camera couldn't init!!!" + "Error " + errorCode);
+            }
+        });
 
         intakeMotor = opMode.hardwareMap.get(DcMotor.class, INTAKE_MOTOR_NAME);
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -77,7 +87,7 @@ public class IntakeMechanism {
         if(intermediaryMotor.getPower() > 0)
             intermediaryMotor.setPower(0);
         else
-            intermediaryMotor.setPower(1);
+            intermediaryMotor.setPower(INTERMEDIARY_MOTOR_POWER);
     }
 
     public void DEB_ToggleIntake() {
@@ -115,7 +125,7 @@ public class IntakeMechanism {
             intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
             intakeMotor.setPower(INTAKE_MOTOR_POWER);
             intermediaryMotor.setPower(INTERMEDIARY_MOTOR_POWER);
-            intakeServo.setPosition(INTAKE_SERVO_ENGAGED_POS);
+//            intakeServo.setPosition(INTAKE_SERVO_ENGAGED_POS);
 
             while(!Thread.interrupted()) {
                 camera.openCameraDevice();
@@ -128,7 +138,7 @@ public class IntakeMechanism {
             }
 
             intakeServo.setPosition(INTAKE_SERVO_IDLE_POS);
-            Thread.sleep(1000);
+            Thread.sleep(4000);
         } catch (InterruptedException ignored) {
             return false;
         } finally {

@@ -19,9 +19,9 @@ public class OuttakeMechanism {
     }
 
     public static int LOADING_TICKS = 0;
-    public static int LOW_TICKS = 0;
-    public static int MID_TICKS = 0;
-    public static int HIGH_TICKS = 0;
+    public static int LOW_TICKS = 150;
+    public static int MID_TICKS = 300;
+    public static int HIGH_TICKS = 500;
 
     AtomicReference<State> currentState = new AtomicReference<>();
 
@@ -39,14 +39,9 @@ public class OuttakeMechanism {
         elevationMotor = opMode.hardwareMap.get(DcMotor.class, "elevationMotor");
         containerServo = opMode.hardwareMap.get(Servo.class, "containerServo");
 
-        elevationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         elevationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elevationMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        containerServo.setPosition(0);
-
-        setStateAsync(State.LOADING);
-
+        containerServo.setPosition(0.5);
 
     }
 
@@ -57,7 +52,12 @@ public class OuttakeMechanism {
         switch (currentState.get()) {
             case LOADING: {
                 containerServo.setPosition(0);
+                try {
+                    Thread.sleep(700);
+                } catch (InterruptedException e) {
+                }
                 goToTicks(LOADING_TICKS);
+                containerServo.setPosition(1);
                 break;
             }
             case LOW: {
@@ -75,12 +75,10 @@ public class OuttakeMechanism {
         }
     }
 
-    public void unloadGE() {
-        containerServo.setPosition(1);
-    }
-
     public void setStateAsync(State state) {
         // potentially unsafe; time wil tell..
+
+        if(state == currentState.get()) return;
 
         if(workThread != null && workThread.isAlive())
             workThread.interrupt();
@@ -94,13 +92,14 @@ public class OuttakeMechanism {
     void goToTicks(int targetTicks)
     {
         elevationMotor.setTargetPosition(targetTicks);
-        if(elevationMotor.getCurrentPosition() < elevationMotor.getTargetPosition()) {
-            elevationMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        } else {
-            elevationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        }
+        elevationMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        if(elevationMotor.getCurrentPosition() < elevationMotor.getTargetPosition()) {
+//            elevationMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+//        } else {
+//            elevationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        }
 
-        elevationMotor.setPower(0.8);
+        elevationMotor.setPower(0.5);
         while(elevationMotor.isBusy() && !Thread.interrupted()) {
             Thread.yield();
         }

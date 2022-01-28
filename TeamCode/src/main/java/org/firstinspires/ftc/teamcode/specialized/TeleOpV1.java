@@ -1,9 +1,15 @@
 package org.firstinspires.ftc.teamcode.specialized;
 
+import com.acmerobotics.roadrunner.control.PIDFController;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.RR.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.RR.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.RVM.GamepadEx;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeMechanism;
 import org.firstinspires.ftc.teamcode.mechanisms.OuttakeMechanism;
 
@@ -17,12 +23,20 @@ public class TeleOpV1 extends OpMode {
     IntakeMechanism intakeMechanism;
     OuttakeMechanism outtakeMechanism;
 
+    private PIDFController headingController = new PIDFController(SampleMecanumDrive.HEADING_PID);
+
+//    GamepadEx bGamepad = new GamepadEx(gamepad1);
+
+
     @Override
     public void init() {
-        //drive = new SampleMecanumDrive(hardwareMap);
-        state = new AtomicReference<>(WorkState.RESET);
+        drive = new SampleMecanumDrive(hardwareMap);
+        state = new AtomicReference<>(WorkState.SELECT_LEVEL_AND_CONFIRM);
         intakeMechanism = new IntakeMechanism(this);
         outtakeMechanism = new OuttakeMechanism(this);
+
+
+        headingController.setInputBounds(-Math.PI, Math.PI);
     }
 
     @Override
@@ -32,43 +46,96 @@ public class TeleOpV1 extends OpMode {
     @Override
     public void loop() {
         // Basic movement
-//        drive.setWeightedDrivePower(new Pose2d(
-//                gamepad1.left_stick_x,
-//                gamepad1.left_stick_y,
-//                Math.max(gamepad1.left_trigger, gamepad1.right_trigger)
-//        ));
+        drive.setWeightedDrivePower(new Pose2d(
+                gamepad1.left_stick_y * 0.6,
+                gamepad1.left_stick_x * 0.6,
+                Math.max(gamepad1.left_trigger, gamepad1.right_trigger)
+        ));
 
         workflow();
 
-        if(gamepad1.y) {
-            intakeMechanism.DEB_ToggleIntermediary();
-            try {
-                Thread.sleep(700);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        if(gamepad1.y) {
+//            intakeMechanism.DEB_ToggleIntermediary();
+//            try {
+//                Thread.sleep(700);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        if(gamepad1.dpad_up) {
+//            intakeMechanism.DEB_ToggleIntake();
+//            try {
+//                Thread.sleep(700);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        if(gamepad1.dpad_down) {
+//            intakeMechanism.DEB_ToggleServo();
+//            try {
+//                Thread.sleep(700);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
-        if(gamepad1.dpad_up) {
-            intakeMechanism.DEB_ToggleIntake();
-            try {
-                Thread.sleep(700);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if(gamepad1.dpad_down) {
-            intakeMechanism.DEB_ToggleServo();
-            try {
-                Thread.sleep(700);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
+        circleFollow();
         telemetry.update();
+//        bGamepad.update();
 
+    }
+
+    private Vector2d normalize(Vector2d vec) {
+        double max = Math.max(vec.getX(), vec.getY());
+
+        return new Vector2d(vec.getX() / max, vec.getY() / max);
+    }
+
+    private void circleFollow() {
+        if(Math.abs(gamepad1.right_stick_x) > 0.2|| Math.abs(gamepad1.right_stick_y) > 0.2) {
+
+            // courtesy of https://learnroadrunner.com
+
+            final Vector2d hubOrigin = new Vector2d(4, 0);
+
+            Pose2d driveDirection = new Pose2d();
+            Pose2d poseEstimate = drive.getLocalizer().getPoseEstimate();
+
+            // Create a vector from the gamepad x/y inputs which is the field relative movement
+            // Then, rotate that vector by the inverse of that heading for field centric control
+            Vector2d fieldFrameInput = new Vector2d(
+                    -gamepad1.right_stick_y,
+                    -gamepad1.right_stick_x
+            );
+            Vector2d robotFrameInput = fieldFrameInput.rotated(-poseEstimate.getHeading());
+
+            // Difference between the target vector and the bot's position
+            Vector2d difference = hubOrigin.minus(poseEstimate.vec());
+            // Obtain the target angle for feedback and derivative for feedforward
+            double theta = difference.angle();
+
+            // Not technically omega because its power. This is the derivative of atan2
+            double thetaFF = -fieldFrameInput.rotated(-Math.PI / 2).dot(difference) / (difference.norm() * difference.norm());
+
+            // Set the target heading for the heading controller to our desired angle
+            headingController.setTargetPosition(theta);
+
+            // Set desired angular velocity to the heading controller output + angular
+            // velocity feedforward
+            double headingInput = (headingController.update(poseEstimate.getHeading())
+                    * DriveConstants.kV + thetaFF)
+                    * DriveConstants.TRACK_WIDTH;
+
+            // Combine the field centric x/y velocity with our derived angular velocity
+            driveDirection = new Pose2d(
+                    robotFrameInput,
+                    headingInput
+            );
+
+            drive.setWeightedDrivePower(driveDirection);
+        }
     }
 
     @Override
@@ -118,7 +185,6 @@ public class TeleOpV1 extends OpMode {
             }
             case SELECT_LEVEL_AND_CONFIRM: {
                 if(gamepad1.b) {
-                    outtakeMechanism.unloadGE();
                     outtakeMechanism.setStateAsync(OuttakeMechanism.State.LOADING);
                     state.compareAndSet(WorkState.SELECT_LEVEL_AND_CONFIRM, WorkState.RESET);
                 } else if(gamepad1.dpad_down) {

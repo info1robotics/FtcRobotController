@@ -4,13 +4,11 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.teamcode.RR.drive.SampleMecanumDrive;
 
 import java.util.Objects;
@@ -52,8 +50,6 @@ public class MaxAngularVeloTuner extends LinearOpMode {
 
         drive.setDrivePower(new Pose2d(0, 0, 1));
         timer = new ElapsedTime();
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-
 
         while (!isStopRequested() && timer.seconds() < RUNTIME) {
             drive.updatePoseEstimate();
@@ -61,32 +57,12 @@ public class MaxAngularVeloTuner extends LinearOpMode {
             Pose2d poseVelo = Objects.requireNonNull(drive.getPoseVelocity(), "poseVelocity() must not be null. Ensure that the getWheelVelocities() method has been overridden in your localizer.");
 
             maxAngVelocity = Math.max(poseVelo.getHeading(), maxAngVelocity);
-
-            telemetry.clear();
-            telemetry.addData("Max Angular Velocity (rad)", maxAngVelocity);
-            telemetry.addData("Max Angular Velocity (deg)", Math.toDegrees(maxAngVelocity));
-            AngularVelocity ang = imu.getAngularVelocity();
-
-
-            telemetry.addData("Current IMU Ang Velo Deg X", Math.toDegrees(ang.xRotationRate));
-            telemetry.addData("Current IMU Ang Velo Deg Y", Math.toDegrees(ang.yRotationRate));
-            telemetry.addData("Current IMU Ang Velo Deg Z", Math.toDegrees(ang.zRotationRate));
-            telemetry.addData("Current IMU Ang Velo Unit", ang.unit);
-            telemetry.update();
-            telemetry.update();
         }
 
         drive.setDrivePower(new Pose2d());
 
-        AngularVelocity ang = imu.getAngularVelocity();
-
         telemetry.addData("Max Angular Velocity (rad)", maxAngVelocity);
         telemetry.addData("Max Angular Velocity (deg)", Math.toDegrees(maxAngVelocity));
-
-        telemetry.addData("Current IMU Ang Velo Deg X", Math.toDegrees(ang.xRotationRate));
-        telemetry.addData("Current IMU Ang Velo Deg Y", Math.toDegrees(ang.yRotationRate));
-        telemetry.addData("Current IMU Ang Velo Deg Z", Math.toDegrees(ang.zRotationRate));
-        telemetry.addData("Current IMU Ang Velo Unit", ang.unit);
         telemetry.update();
 
         while (!isStopRequested()) idle();

@@ -63,11 +63,8 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
-import com.info1robotics.rvm.RVLocalStorage;
-import com.info1robotics.rvm.RVRuntimeWebSocketServer;
 import com.qualcomm.ftccommon.ClassManagerFactory;
 import com.qualcomm.ftccommon.FtcAboutActivity;
 import com.qualcomm.ftccommon.FtcEventLoop;
@@ -774,19 +771,19 @@ public class FtcRobotControllerActivity extends Activity
 
       if(RVM_IS_KEY_ACTIVE)
       {
-        RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
-        try {
-          rvWebServer.start(-1, true);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+//        RVRuntimeWebSocketServer rvWebServer = new RVRuntimeWebSocketServer();
+//        try {
+//          rvWebServer.start(-1, true);
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        }
       }
 
     }
     );//.start();
     // /RVM CUSTOM
 
-    RVLocalStorage.init();
+//    RVLocalStorage.init();
 
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();

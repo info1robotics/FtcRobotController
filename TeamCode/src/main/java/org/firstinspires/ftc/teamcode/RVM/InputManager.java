@@ -18,21 +18,4 @@ public class InputManager {
 		g2.update();
 	}
 
-	public float getAnalog(int gamepad, String analog) {return gamepad == 1 ? g1.getAnalog(analog) : g2.getAnalog(analog);}
-
-	public boolean getButton(int gamepad, String button)
-	{
-		return gamepad == 1 ? g1.getButton(button) : g2.getButton(button);
-	}
-
-	public boolean getButtonDown(int gamepad, String button)
-	{
-		return gamepad == 1 ? g1.getButtonDown(button) : g2.getButtonDown(button);
-
-	}
-
-	public boolean getButtonUp(int gamepad, String button)
-	{
-		return gamepad == 1 ? g1.getButtonUp(button) : g2.getButtonUp(button);
-	}
 }
