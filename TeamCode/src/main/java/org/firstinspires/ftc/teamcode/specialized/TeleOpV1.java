@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.RVM.GamepadEx;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeMechanism;
 import org.firstinspires.ftc.teamcode.mechanisms.OuttakeMechanism;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @TeleOp(name = "TeleOp Version 0.1")
@@ -46,10 +47,34 @@ public class TeleOpV1 extends OpMode {
     @Override
     public void loop() {
         // Basic movement
+
+        double ly_I = 0;
+        double lx_I = 0;
+        double rx_I = 0;
+
+        if(Math.abs(gamepad1.left_stick_y) > ly_I)
+            ly_I = Math.abs(gamepad1.left_stick_y);
+        else
+            ly_I = (ly_I - Math.abs(gamepad1.left_stick_y)) / 2;
+
+
+
+        if(Math.abs(gamepad1.left_stick_x) > lx_I)
+            lx_I = Math.abs(gamepad1.left_stick_x);
+        else
+            lx_I = (lx_I - Math.abs(gamepad1.left_stick_x)) / 2;
+
+
+        if(Math.abs(gamepad1.right_stick_x) > rx_I)
+            rx_I = Math.abs(gamepad1.right_stick_x);
+        else
+            rx_I = (rx_I - Math.abs(gamepad1.right_stick_x)) / 2;
+
+
         drive.setWeightedDrivePower(new Pose2d(
-                gamepad1.left_stick_y * 0.6,
-                gamepad1.left_stick_x * 0.6,
-                Math.max(gamepad1.left_trigger, gamepad1.right_trigger)
+                ly_I * 0.6 * Math.signum(gamepad1.left_stick_y),
+                lx_I * 0.6 * Math.signum(gamepad1.left_stick_y),
+                rx_I * 0.6 * Math.signum(gamepad1.right_stick_x)
         ));
 
         workflow();
@@ -81,7 +106,7 @@ public class TeleOpV1 extends OpMode {
 //            }
 //        }
 
-        circleFollow();
+//        circleFollow();
         telemetry.update();
 //        bGamepad.update();
 

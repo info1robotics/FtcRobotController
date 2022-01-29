@@ -138,7 +138,12 @@ public class IntakeMechanism {
             }
 
             intakeServo.setPosition(INTAKE_SERVO_IDLE_POS);
-            Thread.sleep(4000);
+            Thread.sleep(1000);
+            // inverting the direction so it doesnt take any other elems
+            intakeMotor.setPower(-INTAKE_MOTOR_POWER);
+            Thread.sleep(1500);
+            intakeMotor.setPower(0);
+            Thread.sleep(1500);
         } catch (InterruptedException ignored) {
             return false;
         } finally {

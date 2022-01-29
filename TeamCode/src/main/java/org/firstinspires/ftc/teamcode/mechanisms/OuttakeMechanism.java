@@ -20,8 +20,8 @@ public class OuttakeMechanism {
 
     public static int LOADING_TICKS = 0;
     public static int LOW_TICKS = 150;
-    public static int MID_TICKS = 300;
-    public static int HIGH_TICKS = 500;
+    public static int MID_TICKS = 500;
+    public static int HIGH_TICKS = 1200;
 
     AtomicReference<State> currentState = new AtomicReference<>();
 
@@ -51,13 +51,15 @@ public class OuttakeMechanism {
         currentState.set(state);
         switch (currentState.get()) {
             case LOADING: {
-                containerServo.setPosition(0);
                 try {
+                    containerServo.setPosition(0.2);
                     Thread.sleep(700);
-                } catch (InterruptedException e) {
+                    containerServo.setPosition(1);
+                    Thread.sleep(400);
+                }
+                catch (InterruptedException e) {
                 }
                 goToTicks(LOADING_TICKS);
-                containerServo.setPosition(1);
                 break;
             }
             case LOW: {
